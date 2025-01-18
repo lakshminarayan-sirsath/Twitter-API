@@ -34,7 +34,7 @@ public class UserController {
 	}
 	
 	//add new book
-	@GetMapping("/login")
+	@PostMapping("/login")
 		public ResponseEntity<Map<String, Object>> save(@Valid @RequestBody UserLoginRequest userLoginRequest) {
 		DefaultResponse defaultResponse = userService_impl.userLogin(userLoginRequest);
 		return new ResponseEntity<>(defaultResponse.getDefultResponseDemo(), HttpStatus.OK); 

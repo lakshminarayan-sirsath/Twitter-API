@@ -25,25 +25,37 @@ public class SecurityConfig {
     @Autowired
     private JwtFilter jwtFilter;
     
+    private static final String[] SWAGGER_ENDPOINTS = {
+    	    "/swagger-ui/**",          // Swagger UI resources
+    	    "/swagger-ui.html",        // Main Swagger UI page
+    	    "/v3/api-docs/**",         // OpenAPI 3.0 specification documents
+    	    "/swagger-resources/**",   // Swagger resources
+    	    "/webjars/**",             // Static resources used by Swagger UI
+    	    "/configuration/ui",       // Swagger UI configuration endpoint
+    	    "/configuration/security"  // Swagger security configuration endpoint
+    	};
+    
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable()) // Cross-Site Request Forgery
                 .authorizeHttpRequests(requests -> requests
-//                		// swagger
-//                		.requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                		// swagger endpoints
+                		.requestMatchers(SWAGGER_ENDPOINTS).permitAll()
                 		
                 		//FOR ALL
                 		.requestMatchers("/user/new_user", "/user/login").permitAll()
+                		
+                		// ADMIN
+                        .requestMatchers("/**").hasRole("ADMIN")
+                        
+                        // USER
+//                        .requestMatchers("user/auth/**").hasRole("USER")
+                        .requestMatchers("/tweet/new_tweet/").hasRole("USER")
+                        
                         .anyRequest().authenticated())
                 		.sessionManagement(session -> session
                 				.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 		.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-                		
-//                .formLogin(login -> login
-//                        .loginPage("/login")
-//                        .permitAll())
-//                .logout(logout -> logout
-//                        .permitAll());
 
         return http.build();
     }

@@ -13,12 +13,12 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "user_like")
+@Table(name = "user_likes")
 public class Like {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long like_id;
+	private Long id;
 	
 	@ManyToOne
 	@JoinColumn(name = "user_id")
@@ -26,5 +26,5 @@ public class Like {
 		
 	@ManyToOne
 	@JoinColumn(name = "twit_id")
-	private Twit twit;
+	private Tweet tweet;
 }

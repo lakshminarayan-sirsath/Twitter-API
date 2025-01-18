@@ -1,14 +1,15 @@
 package com.task.twitter.Table;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
@@ -19,12 +20,12 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "twit")
-public class Twit {
+@Table(name = "tweet")
+public class Tweet {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long twit_id;
+	private Long id;
 	
 	@ManyToOne
 	private User user;
@@ -35,18 +36,24 @@ public class Twit {
 	
 	private String video;
 	
-	@OneToMany(mappedBy = "twit", cascade = CascadeType.ALL)
+	@OneToMany(mappedBy = "tweet", cascade = CascadeType.ALL)
 	private List<Like> likes = new ArrayList<>();
 	
 	@OneToMany
-	private List<Twit> replyTwits = new ArrayList<>();
+	private List<Tweet> replyTweets = new ArrayList<>();
 	
 	@ManyToMany
-	private List<User> retwitUse = new ArrayList<>();
+	private List<User> reTweetUsers = new ArrayList<>();
 	
 	@ManyToOne
-	private Twit replyFor;
+	private Tweet replyFor;
 	
-	private boolean isTwit;	
+	@Column(columnDefinition = "TINYINT(1)", nullable = false)
+	private boolean isReply; // isReply
+	
+	@Column(columnDefinition = "TINYINT(1)", nullable = false)
+	private boolean isTweet; // isTweet
+	
+	private LocalDateTime createdAt;
 	
 }

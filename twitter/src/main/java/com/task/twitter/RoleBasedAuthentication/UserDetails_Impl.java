@@ -25,15 +25,13 @@ public class UserDetails_Impl implements UserDetails {
 	
 	private User user;
 
-//	@Override
-//	public Collection<? extends GrantedAuthority> getAuthorities() {
-//		 // Convert the list of roles to a list of granted authorities
-//        List<GrantedAuthority> authorities = user.getRole().stream()
-//            .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name())) // Add ROLE_ prefix
-//            .collect(Collectors.toList());
-//        return authorities;
-//	}
-
+	@Override
+	public Collection<? extends GrantedAuthority> getAuthorities() {
+	    // Fetch roles through the user object and map them to GrantedAuthority
+	    return user.getRoles().stream()
+	        .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getRole().name())) 
+	        .collect(Collectors.toList());
+	}
 	
 	@Override
 	public String getPassword() {
@@ -45,10 +43,5 @@ public class UserDetails_Impl implements UserDetails {
 		return user.getEmail();
 	}
 
-	@Override
-	public Collection<? extends GrantedAuthority> getAuthorities() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 }

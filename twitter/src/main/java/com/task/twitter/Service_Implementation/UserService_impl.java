@@ -1,7 +1,9 @@
 package com.task.twitter.Service_Implementation;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,11 +16,14 @@ import org.springframework.stereotype.Service;
 
 import com.task.twitter.GlobalException.CustomException;
 import com.task.twitter.JWT_UtilityAndFilter.JwtUtil;
+import com.task.twitter.JpaRepository.RoleRepository;
 import com.task.twitter.JpaRepository.UserRepository;
 import com.task.twitter.RequestEntityDTO.UserLoginRequest;
 import com.task.twitter.RequestEntityDTO.UserRequest;
 import com.task.twitter.ResponseEntityDTO.DefaultResponse;
+import com.task.twitter.RoleBasedAuthentication.ValidRole;
 import com.task.twitter.Service.UserService;
+import com.task.twitter.Table.Role;
 import com.task.twitter.Table.User;
 
 @Service
@@ -32,6 +37,9 @@ public class UserService_impl implements UserService{
 	UserRepository userRepository;
 	
 	@Autowired
+	RoleRepository roleRepository;
+	
+	@Autowired
 	PasswordEncoder passwordEncoder;
 	
 	@Autowired
@@ -43,17 +51,39 @@ public class UserService_impl implements UserService{
 	@Override
 	public DefaultResponse createNewUser(UserRequest userRequest) {
 		Map<String, Object> map = new HashMap<>();
-//		
-//		if(userRepository.findByEmail(userRequest.getEmail()) != null) {
-//			map.put("status: ", false);
-//			map.put("message: ", "user already exist. (check by email)");
-//			throw new CustomException(map);
-//		}
+		
+		if(userRepository.findByEmail(userRequest.getEmail()) != null) {
+			map.put("status: ", false);
+			map.put("message: ", "user already exist. (check by email)");
+			throw new CustomException(map);
+		}
 		
 		User user = this.userRequest_To_User(userRequest);
 		user.setPassword(passwordEncoder.encode(user.getPassword())); // Encode password
-		User savedUser = userRepository.save(user);
 		
+		Set<Role> roles = new HashSet<>();
+		
+		if(userRequest.getRoles() != null) {
+			for(String tmp: userRequest.getRoles()) {
+				Role role = roleRepository.findByRole(ValidRole.valueOf(tmp.toUpperCase()));
+				if(role == null) {
+					map.put("status: ", false);
+					map.put("message: ", "invalid user role: "+tmp);
+					throw new CustomException(map);
+				}
+				roles.add(role);
+			}
+			
+			user.setRoles(roles);
+		}
+		else {
+			Role role = roleRepository.findByRole(ValidRole.USER);
+			roles.add(role);
+			user.setRoles(roles);
+		}
+		
+		
+		User savedUser = userRepository.save(user);
 		if(savedUser == null) {
 			map.put("status: ", false);
 			map.put("message: ", "Something wrong, user not saved.");

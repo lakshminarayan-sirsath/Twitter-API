@@ -3,7 +3,6 @@ package com.task.twitter.Table;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ForkJoinPool;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -30,7 +29,7 @@ public class User {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long user_id;
+	private Long id;
 	
 	private String fullName;
 	
@@ -58,18 +57,18 @@ public class User {
 	
 
 	@ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE,
-            CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
+            CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.EAGER)
 	@JoinTable(
 	    name = "user_role",
 	    joinColumns = @JoinColumn(name = "user_id"),
-	    inverseJoinColumns = @JoinColumn(name = "user_id")
+	    inverseJoinColumns = @JoinColumn(name = "role_id")
 	)
 	private Set<Role> roles;
 	
 	
 	@JsonIgnore
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-	private List<Twit> twits = new ArrayList<>();
+	private List<Tweet> tweets = new ArrayList<>();
 	
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
 	private List<Like> likes=new ArrayList<>();
