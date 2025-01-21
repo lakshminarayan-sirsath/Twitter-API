@@ -1,8 +1,11 @@
 package com.task.twitter.Service_Implementation;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.modelmapper.ModelMapper;
@@ -11,6 +14,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -18,13 +22,17 @@ import com.task.twitter.GlobalException.CustomException;
 import com.task.twitter.JWT_UtilityAndFilter.JwtUtil;
 import com.task.twitter.JpaRepository.RoleRepository;
 import com.task.twitter.JpaRepository.UserRepository;
+import com.task.twitter.RequestEntityDTO.UpdateUserProfileRequest;
 import com.task.twitter.RequestEntityDTO.UserLoginRequest;
 import com.task.twitter.RequestEntityDTO.UserRequest;
 import com.task.twitter.ResponseEntityDTO.DefaultResponse;
+import com.task.twitter.ResponseEntityDTO.UserProfileResponse;
 import com.task.twitter.RoleBasedAuthentication.ValidRole;
 import com.task.twitter.Service.UserService;
 import com.task.twitter.Table.Role;
 import com.task.twitter.Table.User;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class UserService_impl implements UserService{
@@ -123,6 +131,181 @@ public class UserService_impl implements UserService{
 		}
 	}
 	
+
+	@Override
+	public DefaultResponse updateUserProfile(UpdateUserProfileRequest updateUserProfileRequest) {
+		Authentication authentication = SecurityContextHolder
+				.getContext()
+				.getAuthentication();
+		
+		Map<String, Object> map = new HashMap<>();
+		
+		User user = userRepository.findByEmail(authentication.getName());
+		if(user == null) {
+			map.put("status: ", false);
+			map.put("message: ", "User not found!");
+			throw new CustomException(map);
+		}
+		
+		if(updateUserProfileRequest.getFullName() != null) {
+			user.setFullName(updateUserProfileRequest.getFullName());
+		}
+		
+		if(updateUserProfileRequest.getLocation() != null) {
+			user.setLocation(updateUserProfileRequest.getLocation());
+		}
+		
+		if(updateUserProfileRequest.getWebsite() != null) {
+			user.setWebsite(updateUserProfileRequest.getWebsite());
+		}
+		
+		if(updateUserProfileRequest.getBirthDate() != null) {
+			user.setBirthDate(updateUserProfileRequest.getBirthDate());
+		}
+		
+		if(updateUserProfileRequest.getMobile() != null) {
+			user.setMobile(updateUserProfileRequest.getMobile());
+		}
+		
+		if(updateUserProfileRequest.getImage() != null) {
+			user.setImage(updateUserProfileRequest.getImage());
+		}
+		
+		if(updateUserProfileRequest.getBackgroundImage() != null) {
+			user.setBackgroundImage(updateUserProfileRequest.getBackgroundImage());
+		}
+		
+		if(updateUserProfileRequest.getBio() != null) {
+			user.setBio(updateUserProfileRequest.getBio());
+		}
+		
+		User savedUser = userRepository.save(user);
+		if(savedUser == null) {
+			map.put("status: ", false);
+			map.put("message: ", "Something wrong, user not updated!");
+			throw new CustomException(map);
+		}
+		else {
+			map.put("status: ", false);
+			map.put("message: ", "User updated successfully!");
+			return new DefaultResponse(map);
+		}
+	}
+	
+	@Override
+	public User findUserById(Long userId) {
+		Authentication authentication = SecurityContextHolder
+				.getContext()
+				.getAuthentication();
+		
+		Map<String, Object> map = new HashMap<>();
+		
+		Optional<User> userOptional = userRepository.findById(userId);
+		if(userOptional.isEmpty()) {
+			map.put("status: ", false);
+			map.put("message: ", "User not found!, invalidId");
+			throw new CustomException(map);
+		}
+		return userOptional.get();
+	}
+	
+	@Override
+	public DefaultResponse findUserProfile() {
+		Authentication authentication = SecurityContextHolder
+				.getContext()
+				.getAuthentication();
+		
+		Map<String, Object> map = new HashMap<>();
+		
+		User user = userRepository.findByEmail(authentication.getName());
+		if(user == null) {
+			map.put("status: ", false);
+			map.put("message: ", "User not found!");
+			throw new CustomException(map);
+		}
+		
+		UserProfileResponse userProfileResponse = new UserProfileResponse();
+		
+		userProfileResponse.setFullName(user.getFullName());
+		userProfileResponse.setLocation(user.getLocation());
+		userProfileResponse.setWebsite(user.getWebsite());
+		userProfileResponse.setBirthDate(user.getBirthDate());
+		userProfileResponse.setEmail(user.getEmail());
+		userProfileResponse.setMobile(user.getMobile());
+		userProfileResponse.setBackgroundImage(user.getBackgroundImage());
+		userProfileResponse.setBio(user.getBio());
+		userProfileResponse.setTweet_size(user.getTweets().size());
+		userProfileResponse.setLikes_size(user.getLikes().size());
+		userProfileResponse.setFollowers_size(user.getFollowers().size());
+		userProfileResponse.setFollowing_size(user.getFollowing().size());
+		
+		map.put("status: ", true);
+		map.put("message: ", "User Profile fetched successfully!");
+		map.put("profile: ", userProfileResponse);
+		return new DefaultResponse(map);
+	}
+	
+	@Transactional
+	@Override
+	public DefaultResponse followUser(Long userld) {
+		Authentication authentication = SecurityContextHolder
+				.getContext()
+				.getAuthentication();
+		
+		Map<String, Object> map = new HashMap<>();
+		
+		User user = userRepository.findByEmail(authentication.getName());
+		if(user == null) {
+			map.put("status: ", false);
+			map.put("message: ", "User not found!");
+			throw new CustomException(map);
+		}
+		
+		Optional<User> followToUserOptional = userRepository.findById(userld);
+		if(followToUserOptional.isEmpty()) {
+			map.put("status: ", false);
+			map.put("message: ", "User not found, invalid UserId!");
+			throw new CustomException(map);
+		}
+		User followUser = followToUserOptional.get();
+		
+		// follow
+		if(followUser.getFollowers() == null) {
+			List<User> followrsList = new ArrayList<>();
+			followrsList.add(user);
+		}
+		else {
+			followUser.getFollowers().add(user);
+		}
+		
+		// increase following(associate)
+		if(user.getFollowing() == null) {
+			List<User> followingList = new ArrayList<>();
+			followingList.add(followUser);
+		}
+		else {
+			user.getFollowing().add(followUser);
+		}
+		
+		User savedUser = userRepository.save(user); // save user and followUser (associate)
+		if(savedUser == null) {
+			map.put("status: ", false);
+			map.put("message: ", "following to user unsuccessful! "+followUser.getFullName());
+			throw new CustomException(map);
+		}
+		else {
+			map.put("status: ", true);
+			map.put("message: ", "followed to user ("+followUser.getFullName()+").");
+			return new DefaultResponse(map);
+		}
+	}
+
+	@Override
+	public DefaultResponse unFollowUser(Long userld) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
 	//------------------------------User-DTO-Methods--------------------------------------
 	
 	@Override
@@ -130,5 +313,15 @@ public class UserService_impl implements UserService{
 		User user = modelMapper.map(userRequest, User.class);
 		return user;
 	}
+
+
+
+
+
+	
+
+	
+
+	
 
 }

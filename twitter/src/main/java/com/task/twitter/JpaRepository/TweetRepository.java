@@ -12,4 +12,21 @@ public interface TweetRepository extends JpaRepository<Tweet, Long> {
 	@Query("SELECT t FROM Tweet t ORDER BY t.createdAt ASC")
 	List<Tweet> findAllOrderByCreatedAtAsc();
 
+//	@Query("SELECT t FROM Tweet t WHERE (" +
+//		       "t.user.id = ?1 OR " +
+//		       "?1 MEMBER OF t.reTweetUsers) AND " +
+//		       "t.isTweet = TRUE " +
+//		       "ORDER BY t.createdAt DESC")
+//	List<Tweet> findAllUserTweets(Long userId);
+	@Query("SELECT t FROM Tweet t WHERE t.user.id = ?1 AND t.isTweet = true ORDER BY t.createdAt DESC")
+	List<Tweet> findAllUserTweets(Long userId);
+
+
+	
+	@Query("SELECT t FROM Tweet t JOIN Like l ON l.tweet.id = t.id WHERE l.user.id = ?1")
+	List<Tweet> findByLikedTweetsByUser(Long userId);
+
+
+
+
 }

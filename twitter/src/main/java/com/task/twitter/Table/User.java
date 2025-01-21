@@ -76,12 +76,24 @@ public class User {
 	@Embedded
 	private Varification verification;
 	
-	@JsonIgnore
-	@ManyToMany
-	private List<User> followers = new ArrayList<>();
+	 // Many-to-Many for Followers
+    @JsonIgnore
+    @ManyToMany
+    @JoinTable(
+        name = "user_followers", 
+        joinColumns = @JoinColumn(name = "following_id"), // Current user is following
+        inverseJoinColumns = @JoinColumn(name = "follower_id") // Users following the current user
+    )
+    private List<User> followers = new ArrayList<>();
 
-	@JsonIgnore
-	@ManyToMany
-	private List<User> following = new ArrayList<>();
+    // Many-to-Many for Following
+    @JsonIgnore
+    @ManyToMany
+    @JoinTable(
+        name = "user_following", 
+        joinColumns = @JoinColumn(name = "follower_id"), // Current user is the follower
+        inverseJoinColumns = @JoinColumn(name = "following_id") // Users the current user is following
+    )
+    private List<User> following = new ArrayList<>();
 	
 }

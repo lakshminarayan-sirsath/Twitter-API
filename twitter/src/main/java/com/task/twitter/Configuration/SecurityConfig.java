@@ -50,7 +50,8 @@ public class SecurityConfig {
                         
                         // USER
 //                        .requestMatchers("user/auth/**").hasRole("USER")
-                        .requestMatchers("/tweet/new_tweet/").hasRole("USER")
+//                        .requestMatchers("/tweet/new_tweet/").hasRole("USER")
+                        .requestMatchers("/**").hasRole("USER")
                         
                         .anyRequest().authenticated())
                 		.sessionManagement(session -> session

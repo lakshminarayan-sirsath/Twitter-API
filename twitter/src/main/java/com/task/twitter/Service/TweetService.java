@@ -1,11 +1,11 @@
 package com.task.twitter.Service;
 
-import java.util.List;
-
+import com.task.twitter.RequestEntityDTO.TweetReplyRequest;
 import com.task.twitter.RequestEntityDTO.TweetRequest;
 import com.task.twitter.ResponseEntityDTO.DefaultResponse;
 import com.task.twitter.ResponseEntityDTO.TweetResponse;
 import com.task.twitter.Table.Tweet;
+import com.task.twitter.Table.User;
 
 public interface TweetService {
 
@@ -13,7 +13,17 @@ public interface TweetService {
 	
 	DefaultResponse findAllTwits();
 	
-	DefaultResponse createReply();
+	DefaultResponse retweet(Long tweetld);
+	
+	DefaultResponse removeFromRetweet(Long tweetId);
+	
+	DefaultResponse deleteTweetByld(Long twitld);
+	
+	DefaultResponse createReply(TweetReplyRequest tweetReplyRequest);
+	
+	DefaultResponse getUserTwit();
+	
+	DefaultResponse findByLikesContainsUser();
 	
 	//------------------------------Tweet-DTO-Methods--------------------------------------
 	
@@ -21,6 +31,8 @@ public interface TweetService {
 	
 	TweetResponse Tweet_To_TweetResponse(Tweet tweet);
 	
-//	List<TweetResponse> list_Tweet_To_TweetResponse(List<Tweet> tweets);
+	// -----------------------------------Service-to-other-method----------------------------------------
+	
+	Tweet findByld(Long tweetld);
 	
 }

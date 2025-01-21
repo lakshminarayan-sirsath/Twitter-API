@@ -7,9 +7,12 @@ import java.util.List;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
@@ -27,8 +30,10 @@ public class Tweet {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
-	@ManyToOne
+	@ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.EAGER)
+	@JoinColumn(name = "user_id")
 	private User user;
+
 	
 	private String content;
 	
@@ -36,16 +41,22 @@ public class Tweet {
 	
 	private String video;
 	
-	@OneToMany(mappedBy = "tweet", cascade = CascadeType.ALL)
+	@OneToMany(mappedBy = "tweet", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private List<Like> likes = new ArrayList<>();
 	
-	@OneToMany
-	private List<Tweet> replyTweets = new ArrayList<>();
+	@OneToMany(mappedBy = "replyFor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Tweet> replyTweets = new ArrayList<>(); // Modified for bidirectional mapping
 	
-	@ManyToMany
-	private List<User> reTweetUsers = new ArrayList<>();
+	@ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "retweet_users",
+        joinColumns = @JoinColumn(name = "tweet_id"),
+        inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private List<User> reTweetUsers = new ArrayList<>(); // Added JoinTable for Many-to-Many
 	
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "reply_for_id") // Added JoinColumn name for clarity
 	private Tweet replyFor;
 	
 	@Column(columnDefinition = "TINYINT(1)", nullable = false)
