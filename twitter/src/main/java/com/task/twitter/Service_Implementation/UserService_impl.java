@@ -168,7 +168,7 @@ public class UserService_impl implements UserService{
 		}
 		
 		if(updateUserProfileRequest.getImage() != null) {
-			user.setImage(updateUserProfileRequest.getImage());
+			user.setImage(updateUserProfileRequest.getImage()); // image
 		}
 		
 		if(updateUserProfileRequest.getBackgroundImage() != null) {
@@ -300,10 +300,54 @@ public class UserService_impl implements UserService{
 		}
 	}
 
+	@Transactional
 	@Override
-	public DefaultResponse unFollowUser(Long userld) {
-		// TODO Auto-generated method stub
-		return null;
+	public DefaultResponse unFollowUser(Long userId) {
+	    Authentication authentication = SecurityContextHolder
+	            .getContext()
+	            .getAuthentication();
+
+	    Map<String, Object> map = new HashMap<>();
+
+	    User user = userRepository.findByEmail(authentication.getName());
+	    if (user == null) {
+	        map.put("status: ", false);
+	        map.put("message: ", "User not found!");
+	        throw new CustomException(map);
+	    }
+
+	    Optional<User> unFollowUserOptional = userRepository.findById(userId);
+	    if (unFollowUserOptional.isEmpty()) {
+	        map.put("status: ", false);
+	        map.put("message: ", "User not found, invalid UserId!");
+	        throw new CustomException(map);
+	    }
+	    User unFollowUser = unFollowUserOptional.get();
+
+	    // unfollow
+	    if (unFollowUser.getFollowers() != null && unFollowUser.getFollowers().contains(user)) {
+	        unFollowUser.getFollowers().remove(user);
+	    } else {
+	        map.put("status: ", false);
+	        map.put("message: ", "You are not following this user!");
+	        throw new CustomException(map);
+	    }
+
+	    // decrease following (disassociate)
+	    if (user.getFollowing() != null && user.getFollowing().contains(unFollowUser)) {
+	        user.getFollowing().remove(unFollowUser);
+	    }
+
+	    User savedUser = userRepository.save(user); // save user and unFollowUser (disassociate)
+	    if (savedUser == null) {
+	        map.put("status: ", false);
+	        map.put("message: ", "Unfollowing user unsuccessful! " + unFollowUser.getFullName());
+	        throw new CustomException(map);
+	    } else {
+	        map.put("status: ", true);
+	        map.put("message: ", "Unfollowed user (" + unFollowUser.getFullName() + ").");
+	        return new DefaultResponse(map);
+	    }
 	}
 	
 	//------------------------------User-DTO-Methods--------------------------------------
@@ -314,14 +358,5 @@ public class UserService_impl implements UserService{
 		return user;
 	}
 
-
-
-
-
-	
-
-	
-
-	
 
 }

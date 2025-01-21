@@ -61,11 +61,15 @@ public class UserController {
 	// check many to many table issue. following and followers. @@@@@@@@@@@@@@@@@@@@
 	// get profile
 	@PostMapping("/follow_user/{id}")
-	public ResponseEntity<Map<String, Object>> userProfile(@PathVariable("id") Long userId) {
+	public ResponseEntity<Map<String, Object>> followUser(@PathVariable("id") Long userId) {
 	DefaultResponse defaultResponse = userService_impl.followUser(userId);
 	return new ResponseEntity<>(defaultResponse.getDefultResponseDemo(), HttpStatus.OK); 
 	}
 	
-	
+	@PostMapping("/un_follow_user/{id}")
+	public ResponseEntity<Map<String, Object>> unFollowUser(@PathVariable("id") Long userId) {
+	DefaultResponse defaultResponse = userService_impl.unFollowUser(userId);
+	return new ResponseEntity<>(defaultResponse.getDefultResponseDemo(), HttpStatus.OK); 
+	}
 	
 }

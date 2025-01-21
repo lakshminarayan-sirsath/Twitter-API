@@ -44,6 +44,7 @@ public class SecurityConfig {
                 		
                 		//FOR ALL
                 		.requestMatchers("/user/new_user", "/user/login").permitAll()
+                		.requestMatchers("/cloudinary/upload_file/**").permitAll()
                 		
                 		// ADMIN
                         .requestMatchers("/**").hasRole("ADMIN")

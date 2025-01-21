@@ -73,8 +73,8 @@ public class User {
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
 	private List<Like> likes=new ArrayList<>();
 	
-	@Embedded
-	private Varification verification;
+//	@Embedded
+//	private Varification verification;
 	
 	 // Many-to-Many for Followers
     @JsonIgnore
